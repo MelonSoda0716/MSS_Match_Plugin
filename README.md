@@ -3,7 +3,7 @@
 このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、GOTV無効化、BOT無効化の設定が可能です。   
 日本語、英語対応  
   
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/webapps/shoppingcart?flowlogging_id=556959261620c&mfid=1540396755611_556959261620c#/checkout/openButton)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=862P2CYZVBPMS)
 
 # How to setup
 プラグインを利用するには`Metamod:Source`と`SourceMod`を導入する必要があります。  

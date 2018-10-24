@@ -1,0 +1,121 @@
+﻿"Phrases"
+{
+	"KNIFE_ROUND_WIN_T_MESSAGE"
+	{
+		"en"	"Terrorists won the knife round, Terrorists needs to !stay or !switch."
+		"jp"	"テロリストがナイフラウンドに勝利しました。テロリストは !stay または !switch を選択してください。"
+	}
+	
+	"KNIFE_ROUND_WIN_CT_MESSAGE"
+	{
+		"en"	"Counter-Terrorists won the knife round, Counter-Terrorists needs to !stay or !switch."
+		"jp"	"カウンターテロリストがナイフラウンドに勝利しました。カウンターテロリストは !stay または !switch を選択してください。"
+	}
+	
+	"KNIFE_ROUND_WIN_TEAM_NAME_MESSAGE"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"	"{1} won the knife round, {2} needs to !stay or !switch."
+		"jp"	"{1} がナイフラウンドに勝利しました。{2} は !stay または !switch を選択してください。"
+	}
+	
+	"KNIFE_ROUND_WIN_TEAM_HINT_MESSAGE"
+	{
+		"en"	"Please choose a team<br>Stay team <font color='#00FF00'>!stay</font><br>Switch team <font color='#00FF00'>!switch</font>"
+		"jp"	"チームを選択してください<br>ステイチーム <font color='#00FF00'>!stay</font><br>スイッチチーム <font color='#00FF00'>!switch</font>"
+	}
+	
+	"KNIFE_ROUND_DRAW_MESSAGE"
+	{
+		"en"	"Knife round is a draw, restart game."
+		"jp"	"ナイフラウンドは引き分けです。ゲームをリスタートします。"
+	}
+	
+	"PASSED_PAUSE_MESSAGE"
+	{
+		"#format"	"{1:s}"
+		"en"	"Match is paused by {1}."
+		"jp"	"{1} が試合を一時停止しました。"
+	}
+	
+	"PASSED_TIMEOUT_MESSAGE"
+	{
+		"#format"	"{1:s}"
+		"en"	"Timeout called by {1}."
+		"jp"	"{1} がタイムアウトを宣言しました。"
+	}
+	
+	"RESUMED_PAUSE_MESSAGE"
+	{
+		"#format"	"{1:s}"
+		"en"	"Match is resumed by {1}."
+		"jp"	"{1} が試合を再開しました。"
+	}	
+	
+	"FAILED_MESSAGE"
+	{
+		"en"	"This command is disallowed now."
+		"jp"	"このコマンドは現在許可されていません。"
+	}
+	
+	"SURRENDER_MESSAGE"
+	{
+		"en"	"Surrender"
+		"jp"	"降参"
+	}
+	
+	"SCRAMBLE_TEAM_MESSAGE"
+	{
+		"en"	"Scramble teams"
+		"jp"	"プレイヤーをランダムに振り分けます。"
+	}
+	
+	"SWAPPING_TEAM_MESSAGE"
+	{
+		"en"	"Swapping teams"
+		"jp"	"陣営を交換します。"
+	}
+
+	"SWITCH_TEAM_MESSAGE"
+	{
+		"en"	"Switch teams"
+		"jp"	"陣営を交換します。"
+	}
+
+	"STAY_TEAM_MESSAGE"
+	{
+		"en"	"Stay teams"
+		"jp"	"陣営は変更されません。"
+	}
+	
+	"VOTE_BACKUP_ROUND_MESSAGE"
+	{
+		"en"	"Vote: Load round backup?"
+		"jp"	"投票: マッチをバックアップからロードしますか？"
+	}
+
+	"VOTE_BACKUP_ROUND_MENU_MESSAGE"
+	{
+		"#format"	"{1:s}"
+		"en"	"投票: {1} をロードしますか？"
+		"jp"	"投票: {1} をロードしますか？"
+	}
+
+	"VOTE_PASSED_MESSAGE"
+	{
+		"en"	"Vote passed."
+		"jp"	"投票は可決されました。"
+	}
+	
+	"VOTE_REJECTED_MESSAGE"
+	{
+		"en"	"Vote failed."
+		"jp"	"投票は否決されました。"
+	}
+	
+	"STOP_DEMO_MESSAGE"
+	{
+		"en"	"GOTV Disable."
+		"jp"	"GOTVを無効化します。この設定はマップが変更されるまで維持されます。"
+	}
+}

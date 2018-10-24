@@ -6,11 +6,9 @@
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/webapps/shoppingcart?flowlogging_id=556959261620c&mfid=1540396755611_556959261620c#/checkout/openButton)
 
 # How to setup
-Download ZIPをクリックしダウンロードします。  
-![hts1](https://user-images.githubusercontent.com/39918986/47443203-cc9f9980-d7ee-11e8-9229-7d59df1e4c79.png)  
+Clone or DownloadからDownload ZIPをクリックしダウンロードします。   
 ダウンロードしたファイルを解凍します。  
-`addons/sourcemod`と`cfg`をそのまま下の画像の位置に保存します。  
-![hts2](https://steamuserimages-a.akamaihd.net/ugc/1613797962872828183/6C073845A10EEB6E8FDABA42540CB894576859CB/)  
+`addons/sourcemod`と`cfg`をサーバに保存します。  
 以上でセットアップは完了です。
 
 # How to use

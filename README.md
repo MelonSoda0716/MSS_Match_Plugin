@@ -9,7 +9,8 @@
 Clone or DownloadからDownload ZIPをクリックしダウンロードします。   
 ダウンロードしたファイルを解凍します。  
 `addons/sourcemod`と`cfg`をサーバに保存します。  
-以上でセットアップは完了です。
+以上でセットアップは完了です。  
+※ファイルをいじらずにそのままサーバに保存することでMelonSoda Serverと同じ環境にすることができます。
 
 # How to use
 チャットから利用できるコマンド一覧（SayCommand）

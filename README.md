@@ -41,8 +41,8 @@ Clone or DownloadからDownload ZIPをクリックしダウンロードします
 - - `GOTV・DEMO録画停止`
 - `!backup`
 - - `バックアップラウンド（直前のラウンドのみ）`
-
-チャットから利用できるコマンド一覧（ConsoleCommand）
+  
+コンソールから利用できるコマンド一覧（ConsoleCommand）
 - `admin_backup "任意のラウンド数"`
 - - `直前ラウンド以外のロールックが必要な際に利用（サーバクラッシュや直前ラウンドが過ぎてしまった場合など）`
 

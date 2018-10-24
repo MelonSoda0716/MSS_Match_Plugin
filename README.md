@@ -6,6 +6,7 @@
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/webapps/shoppingcart?flowlogging_id=556959261620c&mfid=1540396755611_556959261620c#/checkout/openButton)
 
 # How to setup
+プラグインを利用するには`Metamod:Source`と`SourceMod`を導入する必要があります。
 Clone or DownloadからDownload ZIPをクリックしダウンロードします。   
 ダウンロードしたファイルを解凍します。  
 `addons/sourcemod`と`cfg`をサーバに保存します。  

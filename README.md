@@ -67,7 +67,9 @@ Convarを変更してコマンドの制限をすることができます。
 - - Enable: `1`
 - - Disable: `0`
 - - Description: `タイムアウトの有効化`
-- - Enable: `1`
+- `mss_backupround_enable`
+- - Enable(Voting): `1`
+- - Enable(forceing): `2`
 - - Disable: `0`
 - - Description: `バックアップラウンドの有効化`
 - `mss_bot_enable`

@@ -7,7 +7,7 @@ public Plugin:myinfo =
 	name = "MSS Match Plugin",
 	author = "MelonSoda",
 	description = "MelonSoda CS:GO Server Match Plugin",
-	version = "1.1.0",
+	version = "1.1.1",
 	url = "https://www.melonsoda.tokyo/"
 };
 
@@ -17,6 +17,7 @@ public Plugin:myinfo =
 // Cvar
 Handle cvar_sv_coaching_enabled;
 Handle cvar_mp_team_timeout_time;
+Handle cvar_mp_round_restart_delay;
 Handle cvar_mp_teamname_1;
 Handle cvar_mp_teamname_2;
 Handle cvar_mp_backup_round_file_last;
@@ -29,6 +30,7 @@ Handle cvar_mss_timeout_enable;
 Handle cvar_mss_backupround_enable;
 Handle cvar_mss_bot_enable;
 Handle cvar_mss_gotvkick_enable;
+Handle cvar_mss_nade_enable;
 
 // Trigger
 int knife_winner;					// ナイフラウンドの勝利チーム
@@ -40,6 +42,7 @@ bool knife                = false;	// ナイフラウンド中か否か
 bool knife_end_choose     = false;	// ナイフラウンド中か否か
 bool end_game             = false;	// 試合が終了したか否か
 bool now_vote_backupround = false;	// バックアップラウンド投票中か否か
+bool nade_mode            = false;  // 練習モード中か否か
 new String:loadcfg[64];				// 試合開始前に読み込むcfg
 
 // TeamName
@@ -66,6 +69,7 @@ public OnPluginStart(){
 	
 	cvar_sv_coaching_enabled       = FindConVar("sv_coaching_enabled");
 	cvar_mp_team_timeout_time      = FindConVar("mp_team_timeout_time");
+	cvar_mp_round_restart_delay    = FindConVar("mp_round_restart_delay");
 	cvar_mp_teamname_1             = FindConVar("mp_teamname_1");
 	cvar_mp_teamname_2             = FindConVar("mp_teamname_2");
 	cvar_mp_backup_round_file_last = FindConVar("mp_backup_round_file_last");
@@ -77,6 +81,7 @@ public OnPluginStart(){
 	cvar_mss_backupround_enable    = CreateConVar("mss_backupround_enable"     ,      "0"      , "0=disable 1=voting 2=forcing(admin only)");
 	cvar_mss_bot_enable            = CreateConVar("mss_bot_enable"             ,      "0"      , "0=disable 1=enable");
 	cvar_mss_gotvkick_enable       = CreateConVar("mss_gotvkick_enable"        ,      "0"      , "0=disable 1=enable");
+	cvar_mss_nade_enable           = CreateConVar("mss_nade_enable"            ,      "1"      , "0=disable 1=enable");
 
 	HookEvent("round_freeze_end"    , ev_round_freeze_end);
 	HookEvent("round_end"           , ev_round_end);
@@ -130,7 +135,11 @@ public OnMapStart(){
 	now_pause         = false;
 	now_timeout       = false;
 	end_game          = false;
-	
+	nade_mode         = false;
+
+	// マップ変更時強制的に練習モードを無効にする
+	ServerCommand("exec nade_off");
+
 }
 
 /**********************************
@@ -195,17 +204,17 @@ public ev_round_end(Handle:event, const String:name[], bool:dontBroadcast){
 		if(knife_winner == 2){
 			
 			KnifeRound_WinT();
-			CreateTimer(3.0, choose_team);
-			CreateTimer(5.5, kniferound_command_hint);
-
+			CreateTimer(GetConVarFloat(cvar_mp_round_restart_delay) - 1.0, choose_team);
+			CreateTimer(GetConVarFloat(cvar_mp_round_restart_delay) - 0.5, kniferound_command_hint);
+			
 		}
 
 		// カウンターテロリストが勝利
 		else if(knife_winner == 3){
 		
 			KnifeRound_WinCT();
-			CreateTimer(3.0, choose_team);
-			CreateTimer(5.5, kniferound_command_hint);
+			CreateTimer(GetConVarFloat(cvar_mp_round_restart_delay) - 1.0, choose_team);
+			CreateTimer(GetConVarFloat(cvar_mp_round_restart_delay) - 0.5, kniferound_command_hint);
 
 		}
 		
@@ -334,6 +343,7 @@ public ev_match_end(Event event, const char[] name, bool dontBroadcast){
 **********************************/
 public Action:Command_Say(client, args){
 	
+	// 試合が終了したら全コマンドをマップが変更されるまで使用不可にする
 	if(end_game == false){
 	
 		new String:text[64];				//発言内容保存
@@ -510,6 +520,33 @@ public Action:Command_Say(client, args){
 			NoGotv();
 
 		}
+		// 練習モードは独立したモードであるため、!restartや!lo3等のコマンドの影響を受けない
+		// 必要に応じて手動で無効にすること
+		else if(StrEqual(text, "!nade", true)){
+			
+			// 練習モードが有効化されているか確認
+			if(GetConVarInt(cvar_mss_nade_enable) != 1 ) {
+				return;
+			}
+
+			// 練習モードがオフならば練習モードをオン
+			if(nade_mode == false){
+				
+				nade_mode = true;
+				PrintToChatAll("[%s] %t",printchat_name,"NADE_MODE_ON_MESSAGE");
+				ServerCommand("exec nade_on");
+			
+			}
+			// 練習モードがオンならば練習モードをオフ
+			else{
+				
+				nade_mode = false;
+				PrintToChatAll("[%s] %t",printchat_name,"NADE_MODE_OFF_MESSAGE");
+				ServerCommand("exec nade_off");
+				
+			}
+		}
+
 	}
 }
 

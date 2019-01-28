@@ -118,4 +118,16 @@
 		"en"	"GOTV Disable."
 		"jp"	"GOTVを無効化します。この設定はマップが変更されるまで維持されます。"
 	}
+	
+	"NADE_MODE_ON_MESSAGE"
+	{
+		"en"	"Nade mode on."
+		"jp"	"練習モードを有効にしました。試合を行う場合は練習モードを無効にしてください。"
+	}
+	
+	"NADE_MODE_OFF_MESSAGE"
+	{
+		"en"	"Nade mode off."
+		"jp"	"練習モードを無効にしました。"
+	}
 }

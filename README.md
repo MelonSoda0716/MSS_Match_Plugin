@@ -1,6 +1,6 @@
 # MSS_Match_Plugin
 [MelonSoda Server](https://www.melonsoda.tokyo/)で導入しているCS:GO Match Pluginです。  
-このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、GOTV無効化、BOT無効化の設定が可能です。   
+このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、GOTV無効化、BOT無効化、練習モードの設定が可能です。   
 日本語、英語対応  
 
 # How to setup
@@ -39,6 +39,8 @@ Clone or DownloadからDownload ZIPをクリックしダウンロードします
 - - `GOTV・DEMO録画停止`
 - `!backup`
 - - `バックアップラウンド（直前のラウンドのみ）`
+- `!nade`
+- - `練習モードのオン・オフ`
   
 コンソールから利用できるコマンド一覧（ConsoleCommand）
 - `admin_backup "任意のラウンド数"`
@@ -78,3 +80,7 @@ Convarを変更してコマンドの制限をすることができます。
 - - Enable: `1`
 - - Disable: `0`
 - - Description: `GOTVの無効化`
+- `mss_nade_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `練習モードの有効化`

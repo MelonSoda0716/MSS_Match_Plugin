@@ -2,6 +2,7 @@
 [MelonSoda Server](https://www.melonsoda.tokyo/)で導入しているCS:GO Match Pluginです。  
 このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、GOTV無効化、BOT無効化、練習モードの設定が可能です。   
 日本語、英語対応  
+ご満足いただけた方は[寄付(Donation)](https://www.melonsoda.tokyo/donations.php)のご協力をお願いいたします。
 
 # How to setup
 プラグインを利用するには`Metamod:Source`と`SourceMod`を導入する必要があります。  

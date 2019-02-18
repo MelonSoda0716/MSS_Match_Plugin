@@ -7,20 +7,26 @@ public Plugin:myinfo =
 	name = "MSS Match Plugin",
 	author = "MelonSoda",
 	description = "MelonSoda CS:GO Server Match Plugin",
-	version = "1.1.1",
+	version = "1.1.2",
 	url = "https://www.melonsoda.tokyo/"
 };
 
 /**********************************
 * Data Type
 **********************************/
-// Cvar
+// original cvar
 Handle cvar_sv_coaching_enabled;
+Handle cvar_mp_maxmoney;
 Handle cvar_mp_team_timeout_time;
 Handle cvar_mp_round_restart_delay;
 Handle cvar_mp_teamname_1;
 Handle cvar_mp_teamname_2;
 Handle cvar_mp_backup_round_file_last;
+
+// Offset
+new money_offset;
+
+// mss cvar
 Handle cvar_mss_printchat_name;
 new String:printchat_name[16];
 Handle cvar_mss_match_config;
@@ -31,8 +37,9 @@ Handle cvar_mss_backupround_enable;
 Handle cvar_mss_bot_enable;
 Handle cvar_mss_gotvkick_enable;
 Handle cvar_mss_nade_enable;
+Handle cvar_mss_warmup_infinite_money;
 
-// Trigger
+// trigger
 int knife_winner;					// ナイフラウンドの勝利チーム
 bool in_game              = false;	// 試合中か否か
 bool pausable             = false;	// ポーズが有効か否か
@@ -45,11 +52,11 @@ bool now_vote_backupround = false;	// バックアップラウンド投票中か
 bool nade_mode            = false;  // 練習モード中か否か
 new String:loadcfg[64];				// 試合開始前に読み込むcfg
 
-// TeamName
+// teamname
 char ct_team_name[32];
 char t_team_name[32];
 
-// BackupRound
+// backupround
 int all_player_count = 0;
 int vote_end_count = 0;
 int vote_backupround_count = 0;
@@ -68,11 +75,13 @@ public OnPluginStart(){
 	RegConsoleCmd("admin_backup"    , Command_Adminbackup);
 	
 	cvar_sv_coaching_enabled       = FindConVar("sv_coaching_enabled");
+	cvar_mp_maxmoney               = FindConVar("mp_maxmoney");
 	cvar_mp_team_timeout_time      = FindConVar("mp_team_timeout_time");
 	cvar_mp_round_restart_delay    = FindConVar("mp_round_restart_delay");
 	cvar_mp_teamname_1             = FindConVar("mp_teamname_1");
 	cvar_mp_teamname_2             = FindConVar("mp_teamname_2");
 	cvar_mp_backup_round_file_last = FindConVar("mp_backup_round_file_last");
+	money_offset                   = FindSendPropInfo("CCSPlayer" , "m_iAccount");
 	cvar_mss_printchat_name        = CreateConVar("mss_printchat_name"         ,     "MSS"     , "Print to chat name.");
 	cvar_mss_match_config          = CreateConVar("mss_match_config"           , "esl5on5.cfg" , "Execute configs on live.");
 	cvar_mss_scrim_config          = CreateConVar("mss_scrim_config"           ,  "scrim.cfg"  , "Execute configs on scrim.");
@@ -82,10 +91,12 @@ public OnPluginStart(){
 	cvar_mss_bot_enable            = CreateConVar("mss_bot_enable"             ,      "0"      , "0=disable 1=enable");
 	cvar_mss_gotvkick_enable       = CreateConVar("mss_gotvkick_enable"        ,      "0"      , "0=disable 1=enable");
 	cvar_mss_nade_enable           = CreateConVar("mss_nade_enable"            ,      "1"      , "0=disable 1=enable");
+	cvar_mss_warmup_infinite_money = CreateConVar("mss_warmup_infinite_money"  ,      "1"      , "0=disable 1=enable");
 
 	HookEvent("round_freeze_end"    , ev_round_freeze_end);
 	HookEvent("round_end"           , ev_round_end);
 	HookEvent("cs_win_panel_match"  , ev_match_end);
+	HookEvent("player_death"        , ev_player_death);
 	
 }
 
@@ -115,7 +126,6 @@ public OnClientPutInServer(int client){
 	}
 	
 }
-
 
 /**********************************
 * OnMapStart
@@ -321,6 +331,22 @@ public Action:kniferound_command_hint(Handle:timer){
 		}
 		// チームが選択されるまで再帰
 		CreateTimer(1.2, kniferound_command_hint);
+
+	}
+	
+}
+
+/**********************************
+* Player Death
+* 試合が終了したときに実行
+**********************************/
+public ev_player_death(Event event, const char[] name, bool dontBroadcast){
+
+	// ゲーム中でなくかつcvar_mss_warmup_infinite_moneyが有効ならば
+	if( in_game == false && GetConVarInt(cvar_mss_warmup_infinite_money) == 1){
+	
+		int victim = GetClientOfUserId(event.GetInt("userid"));
+		SetEntData(victim, money_offset, GetConVarInt(cvar_mp_maxmoney));
 
 	}
 	
@@ -706,6 +732,9 @@ stock NoGotv(){
 	}
 }
 
+/**********************************
+* リスタート
+**********************************/
 stock Restart(){
 	
 	// ここでのリスタートはウォームアップ開始と同義

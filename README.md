@@ -85,3 +85,7 @@ Convarを変更してコマンドの制限をすることができます。
 - - Enable: `1`
 - - Disable: `0`
 - - Description: `練習モードの有効化`
+- `mss_warmup_infinite_money`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `ウォームアップ時のマネー無限`

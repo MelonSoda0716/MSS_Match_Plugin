@@ -1,20 +1,22 @@
 #include<sourcemod>
 #include<cstrike>
-#include<sdktools>
+#include <sdktools>
+#include <sdkhooks>
 
 public Plugin:myinfo =
 {
 	name = "MSS Match Plugin",
 	author = "MelonSoda",
 	description = "MelonSoda CS:GO Server Match Plugin",
-	version = "1.1.2",
+	version = "1.2.0",
 	url = "https://www.melonsoda.tokyo/"
 };
 
 /**********************************
-* Data Type
+* グローバル関数
 **********************************/
-// original cvar
+
+/* original handle */
 Handle cvar_sv_coaching_enabled;
 Handle cvar_mp_maxmoney;
 Handle cvar_mp_team_timeout_time;
@@ -22,15 +24,17 @@ Handle cvar_mp_round_restart_delay;
 Handle cvar_mp_teamname_1;
 Handle cvar_mp_teamname_2;
 Handle cvar_mp_backup_round_file_last;
+Handle cvar_tv_enable;
+Handle cvar_tv_autorecord;
 
-// Offset
+/* offset */
 new money_offset;
 
-// mss cvar
+/* ConVar handle */
 Handle cvar_mss_printchat_name;
 new String:printchat_name[16];
 Handle cvar_mss_match_config;
-Handle cvar_mss_scrim_config;
+Handle cvar_mss_fullround_config;
 Handle cvar_mss_kniferound_enable;
 Handle cvar_mss_timeout_enable;
 Handle cvar_mss_backupround_enable;
@@ -38,8 +42,13 @@ Handle cvar_mss_bot_enable;
 Handle cvar_mss_gotvkick_enable;
 Handle cvar_mss_nade_enable;
 Handle cvar_mss_warmup_infinite_money;
+Handle cvar_mss_mapchanger_enable;
+Handle cvar_mss_demo_enable;
+Handle cvar_mss_demo_name;
+Handle cvar_mss_damo_directory;
+Handle cvar_mss_demo_record_start;
 
-// trigger
+/* trigger */
 int knife_winner;					// ナイフラウンドの勝利チーム
 bool in_game              = false;	// 試合中か否か
 bool pausable             = false;	// ポーズが有効か否か
@@ -50,26 +59,34 @@ bool knife_end_choose     = false;	// ナイフラウンド中か否か
 bool end_game             = false;	// 試合が終了したか否か
 bool now_vote_backupround = false;	// バックアップラウンド投票中か否か
 bool nade_mode            = false;  // 練習モード中か否か
-new String:loadcfg[64];				// 試合開始前に読み込むcfg
+new String:loadcfg[64];				// 試合開始前に読み込むconfig
 
-// teamname
+/* team name */
 char ct_team_name[32];
 char t_team_name[32];
 
-// backupround
+/* backup round */
 int all_player_count = 0;
 int vote_end_count = 0;
 int vote_backupround_count = 0;
 new String:backup_round_file_name[32];
 
+/* demo record */
+new String:demo_name_formated[256];
+new String:demo_directory_formated[256];
+new String:full_path[512];
+
+/* include other file */
+#include "demo_record.sp"
+#include "map_changer.sp"
+// #include "grenade_trajectory.sp"
+
 /**********************************
-* OnPluginStart
 * プラグインが読み込まれたときに実行
 **********************************/
 public OnPluginStart(){
 	
-	// このプラグインは多言語表示対応しているため必ずphrasesを読み込み
-	LoadTranslations("mss_match_plugin.phrases");
+	LoadTranslations("mss_match_plugin.phrases");	// このプラグインは多言語表示対応しているため必ずphrasesを読み込み
 	
 	RegConsoleCmd("say"             , Command_Say);
 	RegConsoleCmd("admin_backup"    , Command_Adminbackup);
@@ -81,23 +98,37 @@ public OnPluginStart(){
 	cvar_mp_teamname_1             = FindConVar("mp_teamname_1");
 	cvar_mp_teamname_2             = FindConVar("mp_teamname_2");
 	cvar_mp_backup_round_file_last = FindConVar("mp_backup_round_file_last");
-	money_offset                   = FindSendPropInfo("CCSPlayer" , "m_iAccount");
-	cvar_mss_printchat_name        = CreateConVar("mss_printchat_name"         ,     "MSS"     , "Print to chat name.");
-	cvar_mss_match_config          = CreateConVar("mss_match_config"           , "esl5on5.cfg" , "Execute configs on live.");
-	cvar_mss_scrim_config          = CreateConVar("mss_scrim_config"           ,  "scrim.cfg"  , "Execute configs on scrim.");
-	cvar_mss_kniferound_enable     = CreateConVar("mss_kniferound_enable"      ,      "1"      , "0=disable 1=enable");
-	cvar_mss_timeout_enable        = CreateConVar("mss_timeout_enable"         ,      "1"      , "0=disable 1=enable");
-	cvar_mss_backupround_enable    = CreateConVar("mss_backupround_enable"     ,      "0"      , "0=disable 1=voting 2=forcing(admin only)");
-	cvar_mss_bot_enable            = CreateConVar("mss_bot_enable"             ,      "0"      , "0=disable 1=enable");
-	cvar_mss_gotvkick_enable       = CreateConVar("mss_gotvkick_enable"        ,      "0"      , "0=disable 1=enable");
-	cvar_mss_nade_enable           = CreateConVar("mss_nade_enable"            ,      "1"      , "0=disable 1=enable");
-	cvar_mss_warmup_infinite_money = CreateConVar("mss_warmup_infinite_money"  ,      "1"      , "0=disable 1=enable");
+	cvar_tv_enable                 = FindConVar("tv_enable");
+	cvar_tv_autorecord             = FindConVar("tv_autorecord");
 
+	money_offset                   = FindSendPropInfo("CCSPlayer" , "m_iAccount");
+	
+	cvar_mss_printchat_name        = CreateConVar("mss_printchat_name"          ,            "MSS"          , "Print to chat name.");
+	cvar_mss_match_config          = CreateConVar("mss_match_config"            ,        "esl5on5.cfg"      , "Execute configs on live.");
+	cvar_mss_fullround_config      = CreateConVar("mss_fullround_config"        ,  "esl5on5_fullround.cfg"  , "Execute configs on full round.");
+	cvar_mss_kniferound_enable     = CreateConVar("mss_kniferound_enable"       ,            "1"            , "0=disable 1=enable");
+	cvar_mss_timeout_enable        = CreateConVar("mss_timeout_enable"          ,            "1"            , "0=disable 1=enable");
+	cvar_mss_backupround_enable    = CreateConVar("mss_backupround_enable"      ,            "1"            , "0=disable 1=voting 2=forcing(admin only)");
+	cvar_mss_bot_enable            = CreateConVar("mss_bot_enable"              ,            "0"            , "0=disable 1=enable");
+	cvar_mss_gotvkick_enable       = CreateConVar("mss_gotvkick_enable"         ,            "1"            , "0=disable 1=enable");
+	cvar_mss_nade_enable           = CreateConVar("mss_nade_enable"             ,            "1"            , "0=disable 1=enable");
+	cvar_mss_warmup_infinite_money = CreateConVar("mss_warmup_infinite_money"   ,            "1"            , "0=disable 1=enable");
+	cvar_mss_mapchanger_enable     = CreateConVar("mss_mapchanger_enable"       ,            "1"            , "0=disable 1=enable");
+	cvar_mss_demo_enable           = CreateConVar("mss_demo_enable"             ,            "1"            , "0=disable 1=enable");
+	cvar_mss_demo_name             = CreateConVar("mss_demo_name"               , "auto-%Y%m%d-%H%M-<*MAPNAME*>" , "Demo name format (FormatTime).");
+	cvar_mss_damo_directory        = CreateConVar("mss_damo_directory"          , "demo_record/%Y-%m/%Y-%m-%d"   , "Demo directory format (FormatTime).");
+	cvar_mss_demo_record_start     = CreateConVar("mss_demo_record_start_time"  ,            "5.0"               , "Record start time.");
+
+	// BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
+	
 	HookEvent("round_freeze_end"    , ev_round_freeze_end);
 	HookEvent("round_end"           , ev_round_end);
 	HookEvent("cs_win_panel_match"  , ev_match_end);
 	HookEvent("player_death"        , ev_player_death);
-	
+
+	HookConVarChange(cvar_tv_enable     , ForceCvarChange_cvar_tv_enable);
+	HookConVarChange(cvar_tv_autorecord , ForceCvarChange_cvar_tv_autorecord);
+
 }
 
 /**********************************
@@ -108,8 +139,7 @@ stock bool IsValidClient(int client){
 }
 
 /**********************************
-* OnClientPutInServer
-* BOTをキックするためにJOINプレイヤーを確認
+* JOINプレイヤーの確認
 **********************************/
 public OnClientPutInServer(int client){
 	
@@ -120,7 +150,6 @@ public OnClientPutInServer(int client){
 	}
 	else if( GetConVarInt(cvar_mss_bot_enable) == 0 ){
 		
-		// クライアントをチェックしてもいいが面倒なので一律bot_kick
 		ServerCommand("bot_kick");
 		
 	}
@@ -128,7 +157,6 @@ public OnClientPutInServer(int client){
 }
 
 /**********************************
-* OnMapStart
 * マップが読み込まれたときに実行
 **********************************/
 public OnMapStart(){
@@ -147,20 +175,23 @@ public OnMapStart(){
 	end_game          = false;
 	nade_mode         = false;
 
-	// マップ変更時強制的に練習モードを無効にする
-	ServerCommand("exec nade_off");
+	ServerCommand("exec nade_off");	// 強制的に練習モードを無効にする
+
+	if( GetConVarInt(cvar_mss_demo_enable) == 1 ) {
+		
+		CreateTimer(GetConVarFloat(cvar_mss_demo_record_start), DemoRecordStart);	// DEMO録画開始
+
+	}
 
 }
 
 /**********************************
-* ExecLo3
 * !lo3等マッチ開始前に実行
 **********************************/
 public ExecLo3(){
 	
-	// ポーズの有効化とナイフの無効化
-	pausable = true;
-	knife = false;
+	pausable = true;	// ポーズの有効化
+	knife = false;	// ナイフラウンドの無効化
 	
 	ServerCommand("mp_default_team_winner_no_objective -1");
 	ServerCommand("mp_t_default_secondary weapon_glock");
@@ -185,32 +216,27 @@ public Action:live(Handle:timer){
 }
 
 /**********************************
-* RoundStart
-* ラウンドがスタートした際に実行
+* フリーズタイム終了後に実行
 **********************************/
 public ev_round_freeze_end(Handle:event, const String:name[], bool:dontBroadcast){
 
-	// ポーズを無効化
-	pausable = false;
+	pausable = false;	// ポーズを無効化
 	
 }
 
 /**********************************
-* RoundEnd
-* ラウンドがエンドした際に実行
+* ラウンド終了後に実行
 **********************************/
 public ev_round_end(Handle:event, const String:name[], bool:dontBroadcast){
 
-	// ポーズの有効化
-	pausable = true;
+	pausable = true;	// ポーズの有効化
 	
-	// ナイフラウンド実行時に読み込み
+	/* ナイフラウンド実行時に読み込み */
 	if(knife){
 		
-		// ナイフランドの勝利チームをフック
-		knife_winner = GetEventInt(event, "winner");
+		knife_winner = GetEventInt(event, "winner");	// ナイフランドの勝利チームをフック
 
-		// テロリストが勝利
+		/* テロリストが勝利 */
 		if(knife_winner == 2){
 			
 			KnifeRound_WinT();
@@ -218,8 +244,7 @@ public ev_round_end(Handle:event, const String:name[], bool:dontBroadcast){
 			CreateTimer(GetConVarFloat(cvar_mp_round_restart_delay) - 0.5, kniferound_command_hint);
 			
 		}
-
-		// カウンターテロリストが勝利
+		/* カウンターテロリストが勝利 */
 		else if(knife_winner == 3){
 		
 			KnifeRound_WinCT();
@@ -227,8 +252,7 @@ public ev_round_end(Handle:event, const String:name[], bool:dontBroadcast){
 			CreateTimer(GetConVarFloat(cvar_mp_round_restart_delay) - 0.5, kniferound_command_hint);
 
 		}
-		
-		// ナイフラウンドで勝敗がつかなかった場合
+		/* ナイフラウンドが引き分け */
 		else{
 			
 			KnifeRound_Draw();
@@ -238,19 +262,17 @@ public ev_round_end(Handle:event, const String:name[], bool:dontBroadcast){
 }
 
 /**********************************
-* Kniferound
 * ナイフラウンド時に実行
 **********************************/
 public KnifeRound(){
 	
-	// 以下のコマンドの場合cs_マップで不具合が生じるが無視
+	/* 以下のコマンドの場合cs_マップで不具合が生じるが無視 */
 	ServerCommand("exec kniferound_start");
 	ServerCommand("mp_default_team_winner_no_objective 0");
 	ServerCommand("mp_warmup_end");
 	
-	// ポーズの有効化とナイフラウンド終了時にイベンドをフックするためのトリガーを有効化
-	pausable = true;
-	knife = true;
+	pausable = true;	// ポーズの有効化
+	knife = true;	// ナイフラウンドの有効化
 	
 	CreateTimer(1.5, knife_live);
 	
@@ -265,11 +287,10 @@ public Action:knife_live(Handle:timer){
 }
 
 stock KnifeRound_WinT(){
-	
-	// テロリストのチーム名を取得
-	GetConVarString(cvar_mp_teamname_2, t_team_name, sizeof(t_team_name));
 
-	// チームネームが設定されている場合は優先的に表示
+	GetConVarString(cvar_mp_teamname_2, t_team_name, sizeof(t_team_name));	// テロリストのチーム名を取得
+
+	/* チームネームが設定されている場合は表示 */
 	if(t_team_name[0] == '\0'){
 		PrintToChatAll("[%s] %t",printchat_name,"KNIFE_ROUND_WIN_T_MESSAGE");
 	}
@@ -281,10 +302,9 @@ stock KnifeRound_WinT(){
 
 stock KnifeRound_WinCT(){
 	
-	// カウンターテロリストのチーム名を取得
-	GetConVarString(cvar_mp_teamname_1, ct_team_name, sizeof(ct_team_name));
+	GetConVarString(cvar_mp_teamname_1, ct_team_name, sizeof(ct_team_name));	// カウンターテロリストのチーム名を取得
 	
-	// チームネームが設定されている場合は優先的に表示
+	/* チームネームが設定されている場合は表示 */
 	if(ct_team_name[0] == '\0'){
 		PrintToChatAll("[%s] %t",printchat_name,"KNIFE_ROUND_WIN_CT_MESSAGE");
 	}
@@ -299,17 +319,15 @@ stock KnifeRound_Draw(){
 	/* 引き分けなら*/
 	PrintToChatAll("[%s] %t",printchat_name,"KNIFE_ROUND_DRAW_MESSAGE");
 	ServerCommand("exec kniferound_end");
-	// ウォームアップに戻る
-	Restart();
+	Restart();	// ウォームアップに戻る
 	
 }
 
 public Action:choose_team(Handle:timer){
 	
-	// チーム選択のセイコマンドを有効化
-	knife_end_choose = true;
+	knife_end_choose = true;	// チーム選択のコマンドの有効化
 	
-	// !knifeで読み込んだCvarを元に戻す
+	/* !knifeで読み込んだCvarを元に戻す */
 	ServerCommand("exec kniferound_end");
 	ServerCommand("exec gamemode_competitive_server.cfg");
 	ServerCommand("mp_warmup_pausetimer 1");
@@ -319,7 +337,7 @@ public Action:choose_team(Handle:timer){
 
 public Action:kniferound_command_hint(Handle:timer){
 
-	// 勝利チームのプレイヤーのみに表示
+	/* 勝利チームのプレイヤーのみに表示 */
 	if(knife_end_choose == true){
 
 		for(new i=1; i<=MaxClients; i++){
@@ -329,20 +347,19 @@ public Action:kniferound_command_hint(Handle:timer){
 				PrintHintText(i,"%t","KNIFE_ROUND_WIN_TEAM_HINT_MESSAGE");
 			}
 		}
-		// チームが選択されるまで再帰
-		CreateTimer(1.2, kniferound_command_hint);
+		
+		CreateTimer(1.2, kniferound_command_hint);	// チームが選択されるまで再帰
 
 	}
 	
 }
 
 /**********************************
-* Player Death
-* 試合が終了したときに実行
+* プレイヤーが死亡したときに実行
 **********************************/
 public ev_player_death(Event event, const char[] name, bool dontBroadcast){
 
-	// ゲーム中でなくかつcvar_mss_warmup_infinite_moneyが有効ならば
+	/* ゲーム中でなくかつcvar_mss_warmup_infinite_moneyが有効ならば */
 	if( in_game == false && GetConVarInt(cvar_mss_warmup_infinite_money) == 1){
 	
 		int victim = GetClientOfUserId(event.GetInt("userid"));
@@ -353,26 +370,23 @@ public ev_player_death(Event event, const char[] name, bool dontBroadcast){
 }
 
 /**********************************
-* Match End
 * 試合が終了したときに実行
 **********************************/
 public ev_match_end(Event event, const char[] name, bool dontBroadcast){
 	
-	// 試合が終了したら全コマンドをマップが変更されるまで使用不可にする
-	end_game = true;
+	end_game = true;	// 試合が終了したら全コマンドをマップが変更されるまで使用不可にする
 
 }
 
 /**********************************
-* SayCommand
 * テキストチャットのコマンド
 **********************************/
 public Action:Command_Say(client, args){
 	
-	// 試合が終了したら全コマンドをマップが変更されるまで使用不可にする
+	/* 試合が終了したら全コマンドをマップが変更されるまで使用不可にする */
 	if(end_game == false){
 	
-		new String:text[64];				//発言内容保存
+		new String:text[64];	//発言内容保存
 		GetCmdArg(1, text, sizeof(text));	//発言内容取得
 	
 		if( (StrEqual(text, "!live", true)) || (StrEqual(text, "!lo3", true))){
@@ -389,13 +403,12 @@ public Action:Command_Say(client, args){
 			}
 		
 		}
-		
-		else if( (StrEqual(text, "!scrim", true)) ){
+		else if( (StrEqual(text, "!30r", true)) ){
 			
 			if(in_game == false){
 				
 				in_game = true;
-				GetConVarString(cvar_mss_scrim_config, loadcfg, sizeof(loadcfg));
+				GetConVarString(cvar_mss_fullround_config, loadcfg, sizeof(loadcfg));
 				ExecLo3();
 				
 			}
@@ -404,10 +417,9 @@ public Action:Command_Say(client, args){
 			}
 			
 		}
-	
 		else if(StrEqual(text, "!knife", true)){
 			
-			// ナイフランドが有効化されているか確認
+			/* ナイフランドが有効化されているか確認 */
 			if( GetConVarInt(cvar_mss_kniferound_enable) != 1 ) {
 				return;
 			}
@@ -422,31 +434,27 @@ public Action:Command_Say(client, args){
 			}
 		
 		}
-		
 		else if( StrEqual(text, "!restart", true) ){
 			
 			Restart();
 			
 		}
-	
 		else if(StrEqual(text, "!switch", true)){
 			
-			// ナイフラウンド終了後のみ使用可能
+			/* ナイフラウンド終了後のみ使用可能 */
 			if(knife_end_choose){
 				SwitchTeams(client);
 			}
 		
 		}
-	
 		else if(StrEqual(text, "!stay", true)){
 			
-			// ナイフラウンド終了後のみ使用可能
+			/* ナイフラウンド終了後のみ使用可能 */
 			if(knife_end_choose){
 				StayTeams(client);
 			}
 		
 		}
-		
 		else if(StrEqual(text, "!scramble", true)){
 			
 			if(in_game == false){
@@ -457,7 +465,6 @@ public Action:Command_Say(client, args){
 			}
 			
 		}
-		
 		else if(StrEqual(text, "!swap", true)){
 			
 			if(in_game == false){
@@ -467,22 +474,19 @@ public Action:Command_Say(client, args){
 				PrintToChatAll("[%s] %t",printchat_name,"FAILED_MESSAGE");
 			}
 		}
-		
 		else if(StrEqual(text, "!pause", true)){
 		
 			pause(client);
 		
 		}
-		
 		else if(StrEqual(text, "!unpause")){
 		
 			unpause(client);
 		
 		}
-		
 		else if(StrEqual(text, "!timeout")){
 			
-			// タイムアウトが有効化されているか確認
+			/* タイムアウトが有効化されているか確認 */
 			if( GetConVarInt(cvar_mss_timeout_enable) != 1 ) {
 				return;
 			}
@@ -490,10 +494,9 @@ public Action:Command_Say(client, args){
 			timeout(client);
 			
 		}
-		
 		else if(StrEqual(text, "!coach t")){
 			
-			// コーチモードが有効化されているか確認
+			/* コーチモードが有効化されているか確認 */
 			if( GetConVarInt(cvar_sv_coaching_enabled) != 1 ) {
 			
 				PrintToChatAll("[%s] %t",printchat_name,"FAILED_MESSAGE");
@@ -504,10 +507,9 @@ public Action:Command_Say(client, args){
 			ClientCommand(client, "coach t");
 			
 		}
-		
 		else if(StrEqual(text, "!coach ct")){
 			
-			// コーチモードが有効化されているか確認
+			/* コーチモードが有効化されているか確認 */
 			if( GetConVarInt(cvar_sv_coaching_enabled) != 1 ) {
 			
 				PrintToChatAll("[%s] %t",printchat_name,"FAILED_MESSAGE");
@@ -518,15 +520,14 @@ public Action:Command_Say(client, args){
 			ClientCommand(client, "coach ct");
 			
 		}
-		
 		else if(StrEqual(text, "!backup", true)){
 			
-			// バックアップラウンドが有効化されているか確認
+			/* バックアップラウンドが有効化されているか確認 */
 			if( GetConVarInt(cvar_mss_backupround_enable) == 0 ) {
 				return;
 			}
 			
-			// 試合中かつ現在バックアップラウンド投票中でないか確認
+			/* 試合中かつ現在バックアップラウンド投票中でないか確認 */
 			if( now_vote_backupround == false && in_game == true){
 				AutoRollback(client);
 			}
@@ -535,10 +536,9 @@ public Action:Command_Say(client, args){
 			}
 			
 		}
-		
 		else if(StrEqual(text, "!nogotv", true)){
 			
-			// GOTVキックが有効化されているか確認
+			/* GOTVキックが有効化されているか確認 */
 			if( GetConVarInt(cvar_mss_gotvkick_enable) != 1 ) {
 				return;
 			}
@@ -546,16 +546,14 @@ public Action:Command_Say(client, args){
 			NoGotv();
 
 		}
-		// 練習モードは独立したモードであるため、!restartや!lo3等のコマンドの影響を受けない
-		// 必要に応じて手動で無効にすること
+		/* 練習モードは独立した機能であるため!restartや!lo3のコマンドの影響を受けない */
 		else if(StrEqual(text, "!nade", true)){
 			
-			// 練習モードが有効化されているか確認
+			/* 練習モードが有効化されているか確認 */
 			if(GetConVarInt(cvar_mss_nade_enable) != 1 ) {
 				return;
 			}
-
-			// 練習モードがオフならば練習モードをオン
+			/* 練習モードをオフからオン */
 			if(nade_mode == false){
 				
 				nade_mode = true;
@@ -563,7 +561,7 @@ public Action:Command_Say(client, args){
 				ServerCommand("exec nade_on");
 			
 			}
-			// 練習モードがオンならば練習モードをオフ
+			/* 練習モードをオンからオフ */
 			else{
 				
 				nade_mode = false;
@@ -572,20 +570,27 @@ public Action:Command_Say(client, args){
 				
 			}
 		}
+		else if((StrEqual(text, "!map", true))){
+
+			/* マップチェンジャーが有効化されているか確認 */
+			if( GetConVarInt(cvar_mss_mapchanger_enable) != 1 ) {
+				return;
+			}
+			ChooseMapMenu(client);
+		}
 
 	}
 }
 
 /**********************************
-* Pause and Timeout
+* ポーズとタイムアウト
 **********************************/
 stock pause(client){
 
-	// 名前の取得
 	new String:name[128];
 	GetClientName(client, name, sizeof(name));
 
-	// ポーズが有効でかつ現在ポーズがされおらずかつタイムアウトもされていない場合
+	/* ポーズが有効でかつ現在ポーズがされおらずかつタイムアウトもされていない場合 */
 	if(pausable==true && now_pause==false && now_timeout==false){
 	
 		PrintToChatAll("[%s] %t",printchat_name,"PASSED_PAUSE_MESSAGE",name);
@@ -600,11 +605,10 @@ stock pause(client){
 
 stock unpause(client){
 
-	// 名前の取得
 	new String:name[128];
 	GetClientName(client, name, sizeof(name));
 	
-	// ポーズが有効で現在ポーズされておりかつタイムアウトがされていない場合
+	/* ポーズが有効で現在ポーズされておりかつタイムアウトがされていない場合 */
 	if(pausable==true && now_pause==true && now_timeout==false){
 	
 		PrintToChatAll("[%s] %t",printchat_name,"RESUMED_PAUSE_MESSAGE",name);
@@ -618,31 +622,28 @@ stock unpause(client){
 
 stock timeout(client){
 
-	// 名前の取得
 	new String:name[128];
 	GetClientName(client, name, sizeof(name));
 
-	// ポーズが有効で現在ポーズがされておらずかつタイムアウトもされていない場合
+	/* ポーズが有効で現在ポーズがされておらずかつタイムアウトもされていない場合 */
 	if(pausable==true && now_pause==false && now_timeout==false){
 		
-		// テロリストのタイムアウト(試合を開始したときの初期のチーム)
+		/* テロリストのタイムアウト(試合を開始したときの初期のチーム) */
 		if(GetClientTeam(client) == 2){
 			
 			PrintToChatAll("[%s] %t",printchat_name,"PASSED_TIMEOUT_MESSAGE",name);
 			ServerCommand("timeout_terrorist_start");
 			now_timeout = true;
-			// mp_team_timeout_time+1.0秒間は他のチームがポーズとタイムアウトできないように設定
-			CreateTimer(GetConVarFloat(cvar_mp_team_timeout_time) + 1.0, timeout_end);
+			CreateTimer(GetConVarFloat(cvar_mp_team_timeout_time) + 1.0, timeout_end);	// mp_team_timeout_time+1.0秒間は他のチームがポーズとタイムアウトできないように設定
 		}
 
-		// カウンターテロリストのタイムアウト(試合を開始したときの初期のチーム)
+		/* カウンターテロリストのタイムアウト(試合を開始したときの初期のチーム) */
 		else if(GetClientTeam(client) == 3){
 			
 			PrintToChatAll("[%s] %t",printchat_name,"PASSED_TIMEOUT_MESSAGE",name);
 			ServerCommand("timeout_ct_start");
 			now_timeout = true;
-			// mp_team_timeout_time+1.0秒間は他のチームがポーズとタイムアウトできないように設定
-			CreateTimer(GetConVarFloat(cvar_mp_team_timeout_time) + 1.0, timeout_end);
+			CreateTimer(GetConVarFloat(cvar_mp_team_timeout_time) + 1.0, timeout_end);	// mp_team_timeout_time+1.0秒間は他のチームがポーズとタイムアウトできないように設定
 		}
 		else{
 			PrintToChatAll("[%s] %t",printchat_name,"FAILED_MESSAGE");
@@ -657,20 +658,18 @@ stock timeout(client){
 
 public Action:timeout_end(Handle:timer){
 
-	// タイムアウト無効化解除
-	now_timeout = false;
+	now_timeout = false;	// タイムアウト無効化解除
 	
 }
 
 /**********************************
-* KnifeRound to Swtich or Stay
-* ナイフラウンド終了後にプレイヤーが選択
+* ナイフラウンド終了後の選択
 **********************************/
 stock SwitchTeams(client){
 
-	// ナイフランド勝利チーム以外がチームを選択できないようにチームを確認
 	int trigger_team = GetClientTeam(client);
-	
+
+	/* ナイフランド勝利チーム以外がチームを選択できないようにチームを確認 */	
 	if(knife_winner == trigger_team){
 		knife_end_choose  = false;
 		PrintToChatAll("[%s] %t",printchat_name,"SWITCH_TEAM_MESSAGE");
@@ -682,9 +681,9 @@ stock SwitchTeams(client){
 
 stock StayTeams(client){
 
-	// ナイフランド勝利チーム以外がチームを選択できないようにチームを確認
 	int trigger_team = GetClientTeam(client);
 	
+	/* ナイフランド勝利チーム以外がチームを選択できないようにチームを確認 */
 	if(knife_winner == trigger_team){
 		knife_end_choose  = false;
 		PrintToChatAll("[%s] %t",printchat_name,"STAY_TEAM_MESSAGE");
@@ -701,8 +700,7 @@ public Action:EX_lo3(Handle:timer){
 }
 
 /**********************************
-* Other Command
-* その他のセイコマンド
+* その他のコマンド
 **********************************/
 stock ScrambleTeams(){
 
@@ -722,26 +720,24 @@ stock NoGotv(){
 
 	PrintToChatAll("[%s] %t",printchat_name,"STOP_DEMO_MESSAGE");
 	
-	// GOTVが2つある場合も考慮してとりあえず回す
+	/* GOTVが2つある場合も考慮 */
 	for (new i = 1; i <= MaxClients; i++){
 		
-		// GOTVならキック
+		/* GOTVならキック */
 		if(IsValidClient(i) && GetClientTeam(i) == 0){
-			KickClient(i,"Kick GOTV");
+			KickClient(i,"KICK GOTV");
 		}
 	}
 }
 
 /**********************************
-* リスタート
+* リスタート(ウォームアップ開始と同義)
 **********************************/
 stock Restart(){
 	
-	// ここでのリスタートはウォームアップ開始と同義
-	
 	GetConVarString(cvar_mss_match_config, loadcfg, sizeof(loadcfg));
 	
-	// 以下のフラグをすべてリセット
+	/* 以下のtriggerをすべてリセット */
 	in_game              = false;
 	pausable             = false;
 	knife                = false;
@@ -754,10 +750,11 @@ stock Restart(){
 	ServerCommand("mp_ct_default_secondary weapon_hkp2000");
 	ServerCommand("mp_default_team_winner_no_objective -1");
 	
-	// リセット用にconfigを読み込み直す
+	/* リセット用にconfigを読み込み直す */
 	ServerCommand("exec gamemode_competitive_server.cfg");
 	ServerCommand("exec kniferound_end.cfg");
-	// ウォームアップ開始
+	
+	/* ウォームアップ開始 */
 	ServerCommand("mp_unpause_match");
 	ServerCommand("mp_warmup_pausetimer 1");
 	ServerCommand("mp_warmup_start");
@@ -765,16 +762,15 @@ stock Restart(){
 }
 
 /**********************************
-* Backup Round (Auto)
-* バックアップラウンド(!backupから実行)
+* バックアップラウンド(!backup)
 **********************************/
 stock AutoRollback(client){
 
-	// 同じラウンドをロールバックしようとするとCvarからファイル名を取得できないためtmpに保存
+	/* 同じラウンドをロールバックしようとするとCvarからファイル名を取得できないためtmpに保存 */
 	char tmp_brfn[32];
 	GetConVarString(cvar_mp_backup_round_file_last, tmp_brfn, sizeof(tmp_brfn));
 
-	// 同じラウンドでなければifに入る
+	/* 同じラウンドでなければifに入る */
 	if(tmp_brfn[0] != '\0'){
 		backup_round_file_name = tmp_brfn;
 	}
@@ -789,21 +785,20 @@ stock BackupRoundVoteStart(int client){
 	
 	now_vote_backupround = true;	// 投票開始
 	
-	all_player_count = 0;			// プレイヤーの数
-	vote_backupround_count = 0;		// 投票対象プレイヤー数のリセット
-	vote_end_count = 0;				// 投票済プレイヤーのリセット
+	all_player_count = 0;	// プレイヤーの数
+	vote_backupround_count = 0;	// 投票対象プレイヤー数のリセット
+	vote_end_count = 0;	// 投票済プレイヤーのリセット
 	
-	// サーバ内のプレイヤーだけ回す
+	/* サーバ内のプレイヤーだけ回す */
 	for(new i=1; i<=MaxClients; i++){
 		if(IsValidClient(i) && !IsFakeClient(i)){	// BOTを除く
-			if(GetClientTeam(i) != 1){				// 観戦者を除く
-				all_player_count++;					// 投票対象プレイヤー数をカウント
-				BackupRoundVoteMenu(i);				// 対象者に対してメニュー表示
+			if(GetClientTeam(i) != 1){	// 観戦者を除く
+				all_player_count++;	// 投票対象プレイヤー数をカウント
+				BackupRoundVoteMenu(i);	// 対象者に対してメニュー表示
 			}
 		}
 	}
 	
-	// 投票の時間制限
 	CreateTimer(0.0, BackupRoundVoteEndTimer);
 	
 }
@@ -851,7 +846,7 @@ public BackupRoundVoteMenuHandler(Menu menu, MenuAction action, int client, int 
 		if (StrEqual(info, "BACKUP_YES")){
 		 	
 		 	vote_backupround_count++;	// YESの人のみカウント
-		 	vote_end_count++;			// 投票終了者のカウント
+		 	vote_end_count++;	// 投票終了者のカウント
 		 	
 			 /* 投票終了者と対象者が等しい場合 */
 		 	if(vote_end_count == all_player_count){
@@ -860,7 +855,7 @@ public BackupRoundVoteMenuHandler(Menu menu, MenuAction action, int client, int 
 		}
 		else if (StrEqual(info, "BACKUP_NO")){
 			
-			vote_end_count++;			// 投票終了者のカウント
+			vote_end_count++;	// 投票終了者のカウント
 			
 			 /* 投票終了者と対象者が等しい場合 */
 			if(vote_end_count == all_player_count){
@@ -887,13 +882,13 @@ public ResultBackupRound(){
 	
 }
 
-// ロールバックの実行
 public Action:backup_round(Handle:timer){
 	
+	/* ロールバックの実行 */
 	ServerCommand("mp_backup_restore_load_file %s", backup_round_file_name);
 	ServerCommand("mp_backup_restore_load_autopause 1");
 	
-	// 以下のイベントを有効化
+	/* 以下のtriggerを有効化 */
 	in_game = true;
 	pausable = true;
 	now_pause = true;
@@ -901,9 +896,7 @@ public Action:backup_round(Handle:timer){
 }
 
 /**********************************
-* Backup Round (Admin)
-* バックアップラウンド(コンソールコマンドから実行)
-* 当該ラウンド以外のロールバックに使用
+* バックアップラウンド(Console)
 **********************************/
 public Action Command_Adminbackup(int client, int args){
 
@@ -947,11 +940,11 @@ public Action Command_Adminbackup(int client, int args){
 		
 	}
 
-	// 投票(Voting)にした場合
+	/* 投票(Voting)にした場合 */
 	if( GetConVarInt(cvar_mss_backupround_enable) == 1 ) {
 		BackupRoundVoteStart(client);
 	}
-	// 強制(forceing)にした場合
+	/* 強制(forceing)にした場合 */
 	else{
 		CreateTimer(1.5, backup_round);
 	}

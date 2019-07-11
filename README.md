@@ -1,8 +1,8 @@
 # MSS_Match_Plugin
 [MelonSoda Server](https://www.melonsoda.tokyo/)で導入しているCS:GO Match Pluginです。  
-このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、GOTV無効化、BOT無効化、練習モードの設定が可能です。   
+このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMOレコード、マップチェンジャー、GOTV無効化、BOT無効化、練習モードの設定が可能です。   
 日本語、英語対応  
-ご満足いただけた方は[寄付(Donation)](https://www.melonsoda.tokyo/donations.php)のご協力をお願いいたします。
+[寄付(Donation)](https://www.melonsoda.tokyo/donation.php)のご協力をお願いいたします。
 
 # How to setup
 プラグインを利用するには`Metamod:Source`と`SourceMod`を導入する必要があります。  
@@ -16,7 +16,7 @@ Clone or DownloadからDownload ZIPをクリックしダウンロードします
 チャットから利用できるコマンド一覧（SayCommand）
 - `!live`
 - - `試合開始`
-- `!scrim`
+- `!30r`
 - - `フル30ラウンド`
 - `!knife`
 - - `ナイフラウンド`
@@ -89,3 +89,32 @@ Convarを変更してコマンドの制限をすることができます。
 - - Enable: `1`
 - - Disable: `0`
 - - Description: `ウォームアップ時のマネー無限`
+- `mss_mapchanger_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `マップチェンジャーの有効化`
+- `mss_demo_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `DEMOの有効化`
+- `mss_demo_name`
+- - Default: `auto-%Y%m%d-%H%M-<*MAPNAME*>`
+- - Description:
+- - `DEMOファイルの名前`
+- - `DateTime形式`
+- - `表示例: auto-20190315-1200-de_mirage`
+- - `注意: .demはつけないこと`
+- `mss_damo_directory`
+- - Default: `demo_record/%Y-%m/%Y-%m-%d`
+- - Description:
+- - `DEMOファイルの名前`
+- - `DateTime形式`
+- - `保存先例: csgo/demo_record/2019_03/2019-03-15/`
+- - `注意: csgoディレクトリ以下にのみ指定可能`
+- `mss_demo_record_start_time`
+- - Default: `5.0`
+- - Description:
+- - `DEMO録画が開始される時間`
+- - `mss_demo_native_plugin "0"のときのみ有効`
+- - `プレイヤーがサーバに接続したX秒後にDEMO録画開始`
+- - `tv_delayの影響を受けるため低遅延を推奨`

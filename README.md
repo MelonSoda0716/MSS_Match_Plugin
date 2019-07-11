@@ -1,7 +1,11 @@
 # MSS_Match_Plugin
 [MelonSoda Server](https://www.melonsoda.tokyo/)で導入しているCS:GO Match Pluginです。  
-このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMOレコード、マップチェンジャー、GOTV無効化、BOT無効化、練習モードの設定が可能です。   
-日本語、英語対応  
+
+バージョン1.2.0より[MSS_Demo_Record_Plugin](https://github.com/MelonSoda0716/MSS_Demo_Record_Plugin)と[MSS_Map_Changer_Plugin](https://github.com/MelonSoda0716/MSS_Map_Changer_Plugin)の機能を包括しています。  
+
+このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMO録画、マップチェンジャー、GOTV無効化、BOT無効化、簡易的な練習モードの設定が可能です。   
+現在、日本語、英語に対応しています。  
+
 [寄付(Donation)](https://www.melonsoda.tokyo/donation.php)のご協力をお願いいたします。
 
 # How to setup

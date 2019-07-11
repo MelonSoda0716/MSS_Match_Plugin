@@ -3,7 +3,7 @@
 
 バージョン1.2.0より[MSS_Demo_Record_Plugin](https://github.com/MelonSoda0716/MSS_Demo_Record_Plugin)と[MSS_Map_Changer_Plugin](https://github.com/MelonSoda0716/MSS_Map_Changer_Plugin)の機能を包括しています。  
 
-このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMO録画、マップチェンジャー、GOTV無効化、BOT無効化、簡易的な練習モードの設定が可能です。   
+このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMO録画、マップチェンジャー(Steam Workshop対応)、GOTV無効化、BOT無効化、簡易的な練習モードの設定が可能です。   
 現在、日本語、英語に対応しています。  
 
 [寄付(Donation)](https://www.melonsoda.tokyo/donation.php)のご協力をお願いいたします。
@@ -12,7 +12,7 @@
 プラグインを利用するには`Metamod:Source`と`SourceMod`を導入する必要があります。  
 Clone or DownloadからDownload ZIPをクリックしダウンロードします。   
 ダウンロードしたファイルを解凍します。  
-`addons/sourcemod`と`cfg`をサーバに保存します。  
+`addons/sourcemod`と`cfg`、`mapchanger.txt`サーバに保存します。  
 以上でセットアップは完了です。  
 ※ファイルをいじらずにそのままサーバに保存することでMelonSoda Serverと同じ環境にすることができます。
 
@@ -46,10 +46,19 @@ Clone or DownloadからDownload ZIPをクリックしダウンロードします
 - - `バックアップラウンド（直前のラウンドのみ）`
 - `!nade`
 - - `練習モードのオン・オフ`
+- `!map`
+- - `マップ一覧を表示`
   
 コンソールから利用できるコマンド一覧（ConsoleCommand）
 - `admin_backup "任意のラウンド数"`
 - - `直前ラウンド以外のロールックが必要な際に利用（サーバクラッシュや直前ラウンドが過ぎてしまった場合など）`
+
+# Note
+`mapchanger.txt`にマップを追加する場合はマップ名ごとに改行してください。  
+Steam Workshop製のマップもマップ名のみ`mapchanger.txt`に書いてください(aim_mapなどのように)。  
+Valve製の旧マップを`mapchanger.txt`に追加したい場合のみ`workshop/626513993/de_nuke`のように明示的に書いてください。  
+選択したマップがサーバ上にない場合はエラー表示されず何も起きません。  
+`sv_hibernate_when_empty "0"`の場合、サーバからプレイヤーがいなくなってもDEMO録画が継続されます。 
 
 # Convars
 Convarを変更してコマンドの制限をすることができます。  

@@ -8,7 +8,7 @@ public Plugin:myinfo =
 	name = "MSS Match Plugin",
 	author = "MelonSoda",
 	description = "MelonSoda CS:GO Server Match Plugin",
-	version = "1.2.0",
+	version = "1.2.1",
 	url = "https://www.melonsoda.tokyo/"
 };
 
@@ -38,6 +38,8 @@ Handle cvar_mss_fullround_config;
 Handle cvar_mss_kniferound_enable;
 Handle cvar_mss_timeout_enable;
 Handle cvar_mss_backupround_enable;
+Handle cvar_mss_swap_enable;
+Handle cvar_mss_scramble_enable;
 Handle cvar_mss_bot_enable;
 Handle cvar_mss_gotvkick_enable;
 Handle cvar_mss_nade_enable;
@@ -79,7 +81,7 @@ new String:full_path[512];
 /* include other file */
 #include "demo_record.sp"
 #include "map_changer.sp"
-// #include "grenade_trajectory.sp"
+#include "grenade_trajectory.sp"
 
 /**********************************
 * プラグインが読み込まれたときに実行
@@ -108,7 +110,9 @@ public OnPluginStart(){
 	cvar_mss_fullround_config      = CreateConVar("mss_fullround_config"        ,  "esl5on5_fullround.cfg"  , "Execute configs on full round.");
 	cvar_mss_kniferound_enable     = CreateConVar("mss_kniferound_enable"       ,            "1"            , "0=disable 1=enable");
 	cvar_mss_timeout_enable        = CreateConVar("mss_timeout_enable"          ,            "1"            , "0=disable 1=enable");
-	cvar_mss_backupround_enable    = CreateConVar("mss_backupround_enable"      ,            "1"            , "0=disable 1=voting 2=forcing(admin only)");
+	cvar_mss_backupround_enable    = CreateConVar("mss_backupround_enable"      ,            "1"            , "0=disable 1=voting 2=forcing(admin backup)");
+	cvar_mss_swap_enable           = CreateConVar("mss_swap_enable"             ,            "1"            , "0=disable 1=enable");
+	cvar_mss_scramble_enable       = CreateConVar("mss_scramble_enable"         ,            "1"            , "0=disable 1=enable");
 	cvar_mss_bot_enable            = CreateConVar("mss_bot_enable"              ,            "0"            , "0=disable 1=enable");
 	cvar_mss_gotvkick_enable       = CreateConVar("mss_gotvkick_enable"         ,            "1"            , "0=disable 1=enable");
 	cvar_mss_nade_enable           = CreateConVar("mss_nade_enable"             ,            "1"            , "0=disable 1=enable");
@@ -118,8 +122,6 @@ public OnPluginStart(){
 	cvar_mss_demo_name             = CreateConVar("mss_demo_name"               , "auto-%Y%m%d-%H%M-<*MAPNAME*>" , "Demo name format (FormatTime).");
 	cvar_mss_damo_directory        = CreateConVar("mss_damo_directory"          , "demo_record/%Y-%m/%Y-%m-%d"   , "Demo directory format (FormatTime).");
 	cvar_mss_demo_record_start     = CreateConVar("mss_demo_record_start_time"  ,            "5.0"               , "Record start time.");
-
-	// BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 	
 	HookEvent("round_freeze_end"    , ev_round_freeze_end);
 	HookEvent("round_end"           , ev_round_end);
@@ -162,10 +164,12 @@ public OnClientPutInServer(int client){
 public OnMapStart(){
 	
 	ServerCommand("exec mss_match_plugin.cfg");
-	
+
 	GetConVarString(cvar_mss_printchat_name, printchat_name, sizeof(printchat_name));
 	GetConVarString(cvar_mss_match_config, loadcfg, sizeof(loadcfg));
 	
+	BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
+
 	in_game           = false;
 	pausable          = false;
 	knife             = false;
@@ -456,7 +460,11 @@ public Action:Command_Say(client, args){
 		
 		}
 		else if(StrEqual(text, "!scramble", true)){
-			
+
+			/* スクランブルが有効化されているか確認 */
+			if( GetConVarInt(cvar_mss_scramble_enable) != 1 ) {
+				return;
+			}
 			if(in_game == false){
 				ScrambleTeams();
 			}
@@ -467,12 +475,17 @@ public Action:Command_Say(client, args){
 		}
 		else if(StrEqual(text, "!swap", true)){
 			
+			/* スワップが有効化されているか確認 */
+			if( GetConVarInt(cvar_mss_swap_enable) != 1 ) {
+				return;
+			}			
 			if(in_game == false){
 				SwapTeams();
 			}
 			else{
 				PrintToChatAll("[%s] %t",printchat_name,"FAILED_MESSAGE");
 			}
+
 		}
 		else if(StrEqual(text, "!pause", true)){
 		

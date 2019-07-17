@@ -12,7 +12,7 @@
 プラグインを利用するには`Metamod:Source`と`SourceMod`を導入する必要があります。  
 Clone or DownloadからDownload ZIPをクリックしダウンロードします。   
 ダウンロードしたファイルを解凍します。  
-`addons/sourcemod`と`cfg`、`mapchanger.txt`サーバに保存します。  
+`addons/sourcemod`と`cfg`、`mapchanger.txt`をサーバに保存します。  
 以上でセットアップは完了です。  
 ※ファイルをいじらずにそのままサーバに保存することでMelonSoda Serverと同じ環境にすることができます。
 
@@ -69,35 +69,42 @@ Convarを変更してコマンドの制限をすることができます。
 - `mss_match_config`
 - - Default: `esl5on5.cfg`
 - - Description: `マッチコンフィグの指定`
+- `mss_fullround_config`
+- - Default: `esl5on5_fullround.cfg`
+- - Description: `フルラウンド(30ラウンド)コンフィグの指定`
 - `mss_kniferound_enable`
 - - Enable: `1`
 - - Disable: `0`
-- - Description: `ナイフラウンドの有効化`
-- `mss_kniferound_enable`
-- - Enable: `1`
-- - Disable: `0`
-- - Description: `ナイフラウンドの有効化`
+- - Description: `ナイフラウンドの有効・無効`
 - `mss_timeout_enable`
 - - Enable: `1`
 - - Disable: `0`
-- - Description: `タイムアウトの有効化`
+- - Description: `タイムアウトの有効・無効`
 - `mss_backupround_enable`
 - - Enable(Voting): `1`
 - - Enable(forceing): `2`
 - - Disable: `0`
-- - Description: `バックアップラウンドの有効化`
+- - Description: `バックアップラウンドの有効・無効`
+- `mss_swap_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `スワップの有効・無効`
+- `mss_scramble_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `スクランブルの有効・無効`
 - `mss_bot_enable`
 - - Enable: `1`
 - - Disable: `0`
-- - Description: `ボットの無効化`
+- - Description: `ボットの有効・無効`
 - `mss_gotvkick_enable`
 - - Enable: `1`
 - - Disable: `0`
-- - Description: `GOTVの無効化`
+- - Description: `GOTVの有効・無効`
 - `mss_nade_enable`
 - - Enable: `1`
 - - Disable: `0`
-- - Description: `練習モードの有効化`
+- - Description: `練習モードの有効・無効`
 - `mss_warmup_infinite_money`
 - - Enable: `1`
 - - Disable: `0`
@@ -105,11 +112,11 @@ Convarを変更してコマンドの制限をすることができます。
 - `mss_mapchanger_enable`
 - - Enable: `1`
 - - Disable: `0`
-- - Description: `マップチェンジャーの有効化`
+- - Description: `マップチェンジャーの有効・無効`
 - `mss_demo_enable`
 - - Enable: `1`
 - - Disable: `0`
-- - Description: `DEMOの有効化`
+- - Description: `DEMOの有効・無効`
 - `mss_demo_name`
 - - Default: `auto-%Y%m%d-%H%M-<*MAPNAME*>`
 - - Description:

@@ -8,7 +8,7 @@ public Plugin:myinfo =
 	name = "MSS Match Plugin",
 	author = "MelonSoda",
 	description = "MelonSoda CS:GO Server Match Plugin",
-	version = "1.2.1",
+	version = "1.2.2",
 	url = "https://www.melonsoda.tokyo/"
 };
 
@@ -35,6 +35,8 @@ Handle cvar_mss_printchat_name;
 new String:printchat_name[16];
 Handle cvar_mss_match_config;
 Handle cvar_mss_fullround_config;
+Handle cvar_mss_live_enable;
+Handle cvar_mss_fullround_enable;
 Handle cvar_mss_kniferound_enable;
 Handle cvar_mss_timeout_enable;
 Handle cvar_mss_backupround_enable;
@@ -108,6 +110,8 @@ public OnPluginStart(){
 	cvar_mss_printchat_name        = CreateConVar("mss_printchat_name"          ,            "MSS"          , "Print to chat name.");
 	cvar_mss_match_config          = CreateConVar("mss_match_config"            ,        "esl5on5.cfg"      , "Execute configs on live.");
 	cvar_mss_fullround_config      = CreateConVar("mss_fullround_config"        ,  "esl5on5_fullround.cfg"  , "Execute configs on full round.");
+	cvar_mss_live_enable           = CreateConVar("mss_live_enable"             ,            "1"            , "0=disable 1=enable");
+	cvar_mss_fullround_enable      = CreateConVar("mss_fullround_enable"        ,            "1"            , "0=disable 1=enable");
 	cvar_mss_kniferound_enable     = CreateConVar("mss_kniferound_enable"       ,            "1"            , "0=disable 1=enable");
 	cvar_mss_timeout_enable        = CreateConVar("mss_timeout_enable"          ,            "1"            , "0=disable 1=enable");
 	cvar_mss_backupround_enable    = CreateConVar("mss_backupround_enable"      ,            "1"            , "0=disable 1=voting 2=forcing(admin backup)");
@@ -395,6 +399,13 @@ public Action:Command_Say(client, args){
 	
 		if( (StrEqual(text, "!live", true)) || (StrEqual(text, "!lo3", true))){
 			
+			/* ライブが有効化されているか確認 */
+			if( GetConVarInt(cvar_mss_live_enable) != 1 ) {
+
+				PrintToChatAll("[%s] %t",printchat_name,"FAILED_MESSAGE");
+				return;
+
+			}			
 			if(in_game == false){
 		
 				in_game = true;
@@ -408,7 +419,14 @@ public Action:Command_Say(client, args){
 		
 		}
 		else if( (StrEqual(text, "!30r", true)) ){
-			
+
+			/* フルランドが有効化されているか確認 */
+			if( GetConVarInt(cvar_mss_fullround_enable) != 1 ) {
+				
+				PrintToChatAll("[%s] %t",printchat_name,"FAILED_MESSAGE");
+				return;
+
+			}				
 			if(in_game == false){
 				
 				in_game = true;

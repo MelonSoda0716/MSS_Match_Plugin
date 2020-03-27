@@ -72,6 +72,14 @@ Convarを変更してコマンドの制限をすることができます。
 - `mss_fullround_config`
 - - Default: `esl5on5_fullround.cfg`
 - - Description: `フルラウンド(30ラウンド)コンフィグの指定`
+- `mss_live_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `試合開始の有効・無効`
+- `mss_fullround_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `フルラウンド(30ラウンド)開始の有効・無効`
 - `mss_kniferound_enable`
 - - Enable: `1`
 - - Disable: `0`

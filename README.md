@@ -3,7 +3,7 @@
 
 バージョン1.2.0より[MSS_Demo_Record_Plugin](https://github.com/MelonSoda0716/MSS_Demo_Record_Plugin)と[MSS_Map_Changer_Plugin](https://github.com/MelonSoda0716/MSS_Map_Changer_Plugin)の機能を包括しています。  
 
-このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMO録画、マップチェンジャー(Steam Workshop対応)、GOTV無効化、BOT無効化、簡易的な練習モードの設定が可能です。   
+このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMO録画、ダメージプリント、マップチェンジャー(Steam Workshop対応)、GOTV無効化、BOT無効化、簡易的な練習モードの設定が可能です。   
 現在、日本語、英語に対応しています。  
 
 [寄付(Donation)](https://www.melonsoda.tokyo/donation.php)のご協力をお願いいたします。
@@ -100,7 +100,7 @@ Convarを変更してコマンドの制限をすることができます。
 - `mss_scramble_enable`
 - - Enable: `1`
 - - Disable: `0`
-- - Description: `スクランブルの有効・無効`
+- - Description: `3-スクランブルの有効・無効`
 - `mss_bot_enable`
 - - Enable: `1`
 - - Disable: `0`
@@ -121,6 +121,10 @@ Convarを変更してコマンドの制限をすることができます。
 - - Enable: `1`
 - - Disable: `0`
 - - Description: `マップチェンジャーの有効・無効`
+- `mss_damage_print_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `ダメージプリントの有効・無効`
 - `mss_demo_enable`
 - - Enable: `1`
 - - Disable: `0`

@@ -8,7 +8,7 @@ public Plugin:myinfo =
 	name = "MSS Match Plugin",
 	author = "MelonSoda",
 	description = "MelonSoda CS:GO Server Match Plugin",
-	version = "1.2.2",
+	version = "1.2.3",
 	url = "https://www.melonsoda.tokyo/"
 };
 
@@ -47,6 +47,8 @@ Handle cvar_mss_gotvkick_enable;
 Handle cvar_mss_nade_enable;
 Handle cvar_mss_warmup_infinite_money;
 Handle cvar_mss_mapchanger_enable;
+Handle cvar_mss_damage_print_enable;
+Handle cvar_mss_print_damage_message_format;
 Handle cvar_mss_demo_enable;
 Handle cvar_mss_demo_name;
 Handle cvar_mss_damo_directory;
@@ -80,10 +82,16 @@ new String:demo_name_formated[256];
 new String:demo_directory_formated[256];
 new String:full_path[512];
 
+/* damage print */
+int PlayerTotalDamage[MAXPLAYERS + 1][MAXPLAYERS + 1];
+int PlayerHitCount[MAXPLAYERS + 1][MAXPLAYERS + 1];
+bool PlayerRoundDead[MAXPLAYERS + 1][MAXPLAYERS + 1];
+
 /* include other file */
 #include "demo_record.sp"
 #include "map_changer.sp"
 #include "grenade_trajectory.sp"
+#include "damage_print.sp"
 
 /**********************************
 * プラグインが読み込まれたときに実行
@@ -122,19 +130,28 @@ public OnPluginStart(){
 	cvar_mss_nade_enable           = CreateConVar("mss_nade_enable"             ,            "1"            , "0=disable 1=enable");
 	cvar_mss_warmup_infinite_money = CreateConVar("mss_warmup_infinite_money"   ,            "1"            , "0=disable 1=enable");
 	cvar_mss_mapchanger_enable     = CreateConVar("mss_mapchanger_enable"       ,            "1"            , "0=disable 1=enable");
+	cvar_mss_damage_print_enable   = CreateConVar("mss_damage_print_enable"     ,            "1"            , "0=disable 1=enable");
 	cvar_mss_demo_enable           = CreateConVar("mss_demo_enable"             ,            "1"            , "0=disable 1=enable");
 	cvar_mss_demo_name             = CreateConVar("mss_demo_name"               , "auto-%Y%m%d-%H%M-<*MAPNAME*>" , "Demo name format (FormatTime).");
 	cvar_mss_damo_directory        = CreateConVar("mss_damo_directory"          , "demo_record/%Y-%m/%Y-%m-%d"   , "Demo directory format (FormatTime).");
 	cvar_mss_demo_record_start     = CreateConVar("mss_demo_record_start_time"  ,            "5.0"               , "Record start time.");
-	
+
+	cvar_mss_print_damage_message_format = CreateConVar(
+		"mss_rws_print_damage_message_format",
+		"--> ({DMG_TO} dmg / {HITS_TO} hits) to ({DMG_FROM} dmg / {HITS_FROM} hits) from {NAME} ({HEALTH} HP)",
+		"Format of the damage output string."
+	);
+
 	HookEvent("round_freeze_end"    , ev_round_freeze_end);
 	HookEvent("round_end"           , ev_round_end);
 	HookEvent("cs_win_panel_match"  , ev_match_end);
 	HookEvent("player_death"        , ev_player_death);
+	HookEvent("player_hurt"         , ev_pd_damage_dealt);
+	HookEvent("player_death"        , ev_pd_player_death);
 
 	HookConVarChange(cvar_tv_enable     , ForceCvarChange_cvar_tv_enable);
 	HookConVarChange(cvar_tv_autorecord , ForceCvarChange_cvar_tv_autorecord);
-
+	
 }
 
 /**********************************
@@ -183,6 +200,17 @@ public OnMapStart(){
 	end_game          = false;
 	nade_mode         = false;
 
+	/* プリントダメージのリセット */
+	for(int i = 1; i <= MaxClients; i++){
+		for(int j = 1; j <= MaxClients; j++){
+	
+		PlayerTotalDamage[i][j] = 0;
+		PlayerHitCount[i][j] = 0;
+		PlayerRoundDead[i][j] = false;
+
+		}
+	}
+
 	ServerCommand("exec nade_off");	// 強制的に練習モードを無効にする
 
 	if( GetConVarInt(cvar_mss_demo_enable) == 1 ) {
@@ -229,7 +257,18 @@ public Action:live(Handle:timer){
 public ev_round_freeze_end(Handle:event, const String:name[], bool:dontBroadcast){
 
 	pausable = false;	// ポーズを無効化
+
+	/* プリントダメージのリセット */
+	for(int i = 1; i <= MaxClients; i++){
+		for(int j = 1; j <= MaxClients; j++){
 	
+		PlayerTotalDamage[i][j] = 0;
+		PlayerHitCount[i][j] = 0;
+		PlayerRoundDead[i][j] = false;
+
+		}
+	}
+
 }
 
 /**********************************
@@ -238,7 +277,18 @@ public ev_round_freeze_end(Handle:event, const String:name[], bool:dontBroadcast
 public ev_round_end(Handle:event, const String:name[], bool:dontBroadcast){
 
 	pausable = true;	// ポーズの有効化
-	
+
+	/* プリントダメージが有効化されているか確認 */
+	if( GetConVarInt(cvar_mss_damage_print_enable) == 1 ){
+
+		/* プリントダメージの表示 */
+		for(int i = 1; i <= MaxClients; i++){
+			if(IsValidClient(i)){
+				PrintDamageInfo(i);
+			}
+		}
+	}
+
 	/* ナイフラウンド実行時に読み込み */
 	if(knife){
 		
@@ -734,6 +784,14 @@ public Action:EX_lo3(Handle:timer){
 * その他のコマンド
 **********************************/
 stock ScrambleTeams(){
+
+	CreateTimer(0.0, three_times_scramble);
+	CreateTimer(3.2, three_times_scramble);
+	CreateTimer(6.4, three_times_scramble);
+
+}
+
+public Action:three_times_scramble(Handle:timer){
 
 	PrintToChatAll("[%s] %t",printchat_name,"SCRAMBLE_TEAM_MESSAGE");
 	ServerCommand("mp_scrambleteams");

@@ -21,8 +21,8 @@
 	
 	"KNIFE_ROUND_WIN_TEAM_HINT_MESSAGE"
 	{
-		"en"	"Please choose a team<br>Stay team <font color='#00FF00'>!stay</font><br>Switch team <font color='#00FF00'>!switch</font>"
-		"jp"	"チームを選択してください<br>ステイチーム <font color='#00FF00'>!stay</font><br>スイッチチーム <font color='#00FF00'>!switch</font>"
+		"en"	"Please choose a team !stay or !switch"
+		"jp"	"チームを選択してください !stay or !switch"
 	}
 	
 	"KNIFE_ROUND_DRAW_MESSAGE"

@@ -8,7 +8,7 @@ public Plugin:myinfo =
 	name = "MSS Match Plugin",
 	author = "MelonSoda",
 	description = "MelonSoda CS:GO Server Match Plugin",
-	version = "1.2.3",
+	version = "1.2.4",
 	url = "https://www.melonsoda.tokyo/"
 };
 
@@ -53,6 +53,7 @@ Handle cvar_mss_demo_enable;
 Handle cvar_mss_demo_name;
 Handle cvar_mss_damo_directory;
 Handle cvar_mss_demo_record_start;
+Handle cvar_mss_warmup_1v1arena_enable;
 
 /* trigger */
 int knife_winner;					// ナイフラウンドの勝利チーム
@@ -115,26 +116,27 @@ public OnPluginStart(){
 
 	money_offset                   = FindSendPropInfo("CCSPlayer" , "m_iAccount");
 	
-	cvar_mss_printchat_name        = CreateConVar("mss_printchat_name"          ,            "MSS"          , "Print to chat name.");
-	cvar_mss_match_config          = CreateConVar("mss_match_config"            ,        "esl5on5.cfg"      , "Execute configs on live.");
-	cvar_mss_fullround_config      = CreateConVar("mss_fullround_config"        ,  "esl5on5_fullround.cfg"  , "Execute configs on full round.");
-	cvar_mss_live_enable           = CreateConVar("mss_live_enable"             ,            "1"            , "0=disable 1=enable");
-	cvar_mss_fullround_enable      = CreateConVar("mss_fullround_enable"        ,            "1"            , "0=disable 1=enable");
-	cvar_mss_kniferound_enable     = CreateConVar("mss_kniferound_enable"       ,            "1"            , "0=disable 1=enable");
-	cvar_mss_timeout_enable        = CreateConVar("mss_timeout_enable"          ,            "1"            , "0=disable 1=enable");
-	cvar_mss_backupround_enable    = CreateConVar("mss_backupround_enable"      ,            "1"            , "0=disable 1=voting 2=forcing(admin backup)");
-	cvar_mss_swap_enable           = CreateConVar("mss_swap_enable"             ,            "1"            , "0=disable 1=enable");
-	cvar_mss_scramble_enable       = CreateConVar("mss_scramble_enable"         ,            "1"            , "0=disable 1=enable");
-	cvar_mss_bot_enable            = CreateConVar("mss_bot_enable"              ,            "0"            , "0=disable 1=enable");
-	cvar_mss_gotvkick_enable       = CreateConVar("mss_gotvkick_enable"         ,            "1"            , "0=disable 1=enable");
-	cvar_mss_nade_enable           = CreateConVar("mss_nade_enable"             ,            "1"            , "0=disable 1=enable");
-	cvar_mss_warmup_infinite_money = CreateConVar("mss_warmup_infinite_money"   ,            "1"            , "0=disable 1=enable");
-	cvar_mss_mapchanger_enable     = CreateConVar("mss_mapchanger_enable"       ,            "1"            , "0=disable 1=enable");
-	cvar_mss_damage_print_enable   = CreateConVar("mss_damage_print_enable"     ,            "1"            , "0=disable 1=enable");
-	cvar_mss_demo_enable           = CreateConVar("mss_demo_enable"             ,            "1"            , "0=disable 1=enable");
-	cvar_mss_demo_name             = CreateConVar("mss_demo_name"               , "auto-%Y%m%d-%H%M-<*MAPNAME*>" , "Demo name format (FormatTime).");
-	cvar_mss_damo_directory        = CreateConVar("mss_damo_directory"          , "demo_record/%Y-%m/%Y-%m-%d"   , "Demo directory format (FormatTime).");
-	cvar_mss_demo_record_start     = CreateConVar("mss_demo_record_start_time"  ,            "5.0"               , "Record start time.");
+	cvar_mss_printchat_name         = CreateConVar("mss_printchat_name"          ,            "MSS"          , "Print to chat name.");
+	cvar_mss_match_config           = CreateConVar("mss_match_config"            ,        "esl5on5.cfg"      , "Execute configs on live.");
+	cvar_mss_fullround_config       = CreateConVar("mss_fullround_config"        ,  "esl5on5_fullround.cfg"  , "Execute configs on full round.");
+	cvar_mss_live_enable            = CreateConVar("mss_live_enable"             ,            "1"            , "0=disable 1=enable");
+	cvar_mss_fullround_enable       = CreateConVar("mss_fullround_enable"        ,            "1"            , "0=disable 1=enable");
+	cvar_mss_kniferound_enable      = CreateConVar("mss_kniferound_enable"       ,            "1"            , "0=disable 1=enable");
+	cvar_mss_timeout_enable         = CreateConVar("mss_timeout_enable"          ,            "1"            , "0=disable 1=enable");
+	cvar_mss_backupround_enable     = CreateConVar("mss_backupround_enable"      ,            "1"            , "0=disable 1=voting 2=forcing(admin backup)");
+	cvar_mss_swap_enable            = CreateConVar("mss_swap_enable"             ,            "1"            , "0=disable 1=enable");
+	cvar_mss_scramble_enable        = CreateConVar("mss_scramble_enable"         ,            "1"            , "0=disable 1=enable");
+	cvar_mss_bot_enable             = CreateConVar("mss_bot_enable"              ,            "0"            , "0=disable 1=enable");
+	cvar_mss_gotvkick_enable        = CreateConVar("mss_gotvkick_enable"         ,            "1"            , "0=disable 1=enable");
+	cvar_mss_nade_enable            = CreateConVar("mss_nade_enable"             ,            "1"            , "0=disable 1=enable");
+	cvar_mss_warmup_infinite_money  = CreateConVar("mss_warmup_infinite_money"   ,            "1"            , "0=disable 1=enable");
+	cvar_mss_mapchanger_enable      = CreateConVar("mss_mapchanger_enable"       ,            "1"            , "0=disable 1=enable");
+	cvar_mss_damage_print_enable    = CreateConVar("mss_damage_print_enable"     ,            "1"            , "0=disable 1=enable");
+	cvar_mss_demo_enable            = CreateConVar("mss_demo_enable"             ,            "1"            , "0=disable 1=enable");
+	cvar_mss_warmup_1v1arena_enable = CreateConVar("mss_warmup_1v1arena_enable"  ,            "0"            , "0=disable 1=enable");
+	cvar_mss_demo_name              = CreateConVar("mss_demo_name"               , "auto-%Y%m%d-%H%M-<*MAPNAME*>" , "Demo name format (FormatTime).");
+	cvar_mss_damo_directory         = CreateConVar("mss_damo_directory"          , "demo_record/%Y-%m/%Y-%m-%d"   , "Demo directory format (FormatTime).");
+	cvar_mss_demo_record_start      = CreateConVar("mss_demo_record_start_time"  ,            "5.0"               , "Record start time.");
 
 	cvar_mss_print_damage_message_format = CreateConVar(
 		"mss_rws_print_damage_message_format",
@@ -190,6 +192,41 @@ public OnMapStart(){
 	GetConVarString(cvar_mss_match_config, loadcfg, sizeof(loadcfg));
 	
 	BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
+
+	/* 1v1 arenaの設定 */
+	if( GetConVarInt(cvar_mss_warmup_1v1arena_enable) == 0 ){
+
+		/* ファイル名を変更して無効化 */
+		if( FileExists("scripts/vscripts/warmup/warmup_arena.nut")){
+			RenameFile("scripts/vscripts/warmup/disable_warmup_arena.nut", "scripts/vscripts/warmup/warmup_arena.nut");
+		}
+		/* アップデートで新しいwarmup_arena.nutを取得したときの対策 */
+		else if( FileExists("scripts/vscripts/warmup/disable_warmup_arena.nut") ){
+			DeleteFile("scripts/vscripts/warmup/warmup_arena.nut");
+		}
+		/* ファイル名を変更して無効化 */
+		if( FileExists("scripts/vscripts/warmup/warmup_teleport.nut")){
+			RenameFile("scripts/vscripts/warmup/disable_warmup_teleport.nut" , "scripts/vscripts/warmup/warmup_teleport.nut");
+		}
+		/* アップデートで新しいwarmup_teleport.nutを取得したときの対策 */
+		else if( FileExists("scripts/vscripts/warmup/disable_warmup_teleport.nut") ){
+			DeleteFile("scripts/vscripts/warmup/warmup_teleport.nut");
+		}
+
+	}
+	else{
+
+		/* ファイル名を元に戻して有効化 */
+		if( FileExists("scripts/vscripts/warmup/disable_warmup_arena.nut")){
+			RenameFile("scripts/vscripts/warmup/warmup_arena.nut", "scripts/vscripts/warmup/disable_warmup_arena.nut");
+		}
+		
+		/* ファイル名を元に戻して有効化 */
+		if( FileExists("scripts/vscripts/warmup/disable_warmup_teleport.nut")){
+			RenameFile("scripts/vscripts/warmup/warmup_teleport.nut", "scripts/vscripts/warmup/disable_warmup_teleport.nut");
+		}
+
+	}
 
 	in_game           = false;
 	pausable          = false;

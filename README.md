@@ -129,6 +129,10 @@ Convarを変更してコマンドの制限をすることができます。
 - - Enable: `1`
 - - Disable: `0`
 - - Description: `DEMOの有効・無効`
+- `mss_warmup_1v1arena_enable`
+- - Enable: `1`
+- - Disable: `0`
+- - Description: `ウォームアップ1v1arenaの有効・無効`
 - `mss_demo_name`
 - - Default: `auto-%Y%m%d-%H%M-<*MAPNAME*>`
 - - Description:

@@ -6,8 +6,6 @@
 このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMO録画、ダメージプリント、マップチェンジャー(Steam Workshop対応)、GOTV無効化、BOT無効化、簡易的な練習モードの設定が可能です。   
 現在、日本語、英語に対応しています。  
 
-[寄付(Donation)](https://www.melonsoda.tokyo/donation.php)のご協力をお願いいたします。
-
 # How to setup
 プラグインを利用するには`Metamod:Source`と`SourceMod`を導入する必要があります。  
 Clone or DownloadからDownload ZIPをクリックしダウンロードします。   

@@ -1,14 +1,14 @@
 #include<sourcemod>
 #include<cstrike>
-#include <sdktools>
-#include <sdkhooks>
+#include<sdktools>
+#include<sdkhooks>
 
 public Plugin:myinfo =
 {
 	name = "MSS Match Plugin",
 	author = "MelonSoda",
 	description = "MelonSoda CS:GO Server Match Plugin",
-	version = "1.2.4",
+	version = "1.2.5",
 	url = "https://www.melonsoda.tokyo/"
 };
 
@@ -91,8 +91,8 @@ bool PlayerRoundDead[MAXPLAYERS + 1][MAXPLAYERS + 1];
 /* include other file */
 #include "demo_record.sp"
 #include "map_changer.sp"
-#include "grenade_trajectory.sp"
 #include "damage_print.sp"
+#include "entity.sp"
 
 /**********************************
 * プラグインが読み込まれたときに実行
@@ -116,9 +116,9 @@ public OnPluginStart(){
 
 	money_offset                   = FindSendPropInfo("CCSPlayer" , "m_iAccount");
 	
-	cvar_mss_printchat_name         = CreateConVar("mss_printchat_name"          ,            "MSS"          , "Print to chat name.");
-	cvar_mss_match_config           = CreateConVar("mss_match_config"            ,        "esl5on5.cfg"      , "Execute configs on live.");
-	cvar_mss_fullround_config       = CreateConVar("mss_fullround_config"        ,  "esl5on5_fullround.cfg"  , "Execute configs on full round.");
+	cvar_mss_printchat_name         = CreateConVar("mss_printchat_name"          ,           "MSS"           , "Print to chat name.");
+	cvar_mss_match_config           = CreateConVar("mss_match_config"            ,         "5on5.cfg"        , "Execute configs on live.");
+	cvar_mss_fullround_config       = CreateConVar("mss_fullround_config"        ,       "fullround.cfg"     , "Execute configs on full round.");
 	cvar_mss_live_enable            = CreateConVar("mss_live_enable"             ,            "1"            , "0=disable 1=enable");
 	cvar_mss_fullround_enable       = CreateConVar("mss_fullround_enable"        ,            "1"            , "0=disable 1=enable");
 	cvar_mss_kniferound_enable      = CreateConVar("mss_kniferound_enable"       ,            "1"            , "0=disable 1=enable");
@@ -192,41 +192,6 @@ public OnMapStart(){
 	GetConVarString(cvar_mss_match_config, loadcfg, sizeof(loadcfg));
 	
 	BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
-
-	/* 1v1 arenaの設定 */
-	if( GetConVarInt(cvar_mss_warmup_1v1arena_enable) == 0 ){
-
-		/* ファイル名を変更して無効化 */
-		if( FileExists("scripts/vscripts/warmup/warmup_arena.nut")){
-			RenameFile("scripts/vscripts/warmup/disable_warmup_arena.nut", "scripts/vscripts/warmup/warmup_arena.nut");
-		}
-		/* アップデートで新しいwarmup_arena.nutを取得したときの対策 */
-		else if( FileExists("scripts/vscripts/warmup/disable_warmup_arena.nut") ){
-			DeleteFile("scripts/vscripts/warmup/warmup_arena.nut");
-		}
-		/* ファイル名を変更して無効化 */
-		if( FileExists("scripts/vscripts/warmup/warmup_teleport.nut")){
-			RenameFile("scripts/vscripts/warmup/disable_warmup_teleport.nut" , "scripts/vscripts/warmup/warmup_teleport.nut");
-		}
-		/* アップデートで新しいwarmup_teleport.nutを取得したときの対策 */
-		else if( FileExists("scripts/vscripts/warmup/disable_warmup_teleport.nut") ){
-			DeleteFile("scripts/vscripts/warmup/warmup_teleport.nut");
-		}
-
-	}
-	else{
-
-		/* ファイル名を元に戻して有効化 */
-		if( FileExists("scripts/vscripts/warmup/disable_warmup_arena.nut")){
-			RenameFile("scripts/vscripts/warmup/warmup_arena.nut", "scripts/vscripts/warmup/disable_warmup_arena.nut");
-		}
-		
-		/* ファイル名を元に戻して有効化 */
-		if( FileExists("scripts/vscripts/warmup/disable_warmup_teleport.nut")){
-			RenameFile("scripts/vscripts/warmup/warmup_teleport.nut", "scripts/vscripts/warmup/disable_warmup_teleport.nut");
-		}
-
-	}
 
 	in_game           = false;
 	pausable          = false;

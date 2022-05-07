@@ -3,12 +3,12 @@
 
 バージョン1.2.0より[MSS_Demo_Record_Plugin](https://github.com/MelonSoda0716/MSS_Demo_Record_Plugin)と[MSS_Map_Changer_Plugin](https://github.com/MelonSoda0716/MSS_Map_Changer_Plugin)の機能を包括しています。  
 
-このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMO録画、ダメージプリント、マップチェンジャー(Steam Workshop対応)、GOTV無効化、BOT無効化、簡易的な練習モードの設定が可能です。   
+このプラグイン1つでナイフラウンド、ポーズ、タイムアウト、バックアップラウンド、コーチモード、DEMO録画、ダメージプリント、マップチェンジャー(Steam Workshop対応)、GOTV無効化、BOT無効化、1vs1アリーナ無効化、簡易的な練習モードの設定が可能です。   
 現在、日本語、英語に対応しています。  
 
 # How to setup
 プラグインを利用するには`Metamod:Source`と`SourceMod`を導入する必要があります。  
-Clone or DownloadからDownload ZIPをクリックしダウンロードします。   
+Code(緑のボダン)からDownload ZIPを選択してダウンロードします。   
 ダウンロードしたファイルを解凍します。  
 `addons/sourcemod`と`cfg`、`mapchanger.txt`をサーバに保存します。  
 以上でセットアップは完了です。  
